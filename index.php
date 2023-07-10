@@ -24,7 +24,7 @@ $path = isset($_GET['path'])?$_GET['path']:'';
 new App\Models\DB(require 'config_db.php');
 switch ($path) {
 	case '':
-		if(!$_SESSION['token']) $_SESSION['token'] = md5(microtime() . 'turbo' . time());
+		if(!isset($_SESSION['token'])) $_SESSION['token'] = md5(microtime() . 'turbo' . time());
 		$DB = new App\Models\DB();
 		$users = $DB->getDataAll('Select * FROM `users`');
 		foreach ($users as $key => $user) {

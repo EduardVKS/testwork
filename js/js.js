@@ -53,7 +53,7 @@ $('#update-status').submit(function(event) {
 	let data = {};
 
 	data.status = event.originalEvent.submitter.parentNode.querySelector('select').value;
-	$('#update-status input[name]').each(function(key, e) {
+	$('#update-status input[name^="users"]').each(function(key, e) {
 		if(!$(e).prop('checked')) return;
 		users.push([$(e).parent().parent().parent().attr('data-user')]);
 	});
@@ -63,6 +63,7 @@ $('#update-status').submit(function(event) {
 	if(!data.users.length) message = 'You haven\'t selected any users!';
 
 	if(message) {
+		$('#alert-window .modal-title').text('Submit Confirmation');
 		$('#alert-window .modal-footer .action').hide();
 		$('#alert-window .modal-body').html('<p class="text-danger">'+ message + '</p>');
 		$('#alert-window').modal('show');
@@ -115,7 +116,7 @@ function createUser (user) {
 	let options = document.createElement('td');
 
 	checkBox.innerHTML = '<div class="custom-control custom-checkbox">'+
-							`<input class="custom-control-input" type="checkbox" id="checkbox[${user.id}]">`+
+							`<input class="custom-control-input" type="checkbox" name="users[${user.id}]" id="checkbox[${user.id}]">`+
 							`<label class="custom-control-label" for="checkbox[${user.id}]"></label>`+
 						'</div>';
 	userName.innerHTML = `${user.first_name} ${user.last_name}`;

@@ -39,7 +39,7 @@ class DB {
 
 	public function updateData ($query, $bind='', $data=[]) {
 		$stmt = static::$db->prepare($query);
-		if(!is_array($data[0])) {
+		if(!is_array($data[array_key_first($data)])) {
 			$stmt->bind_param($bind, ...$data);
 			return $stmt->execute();
 		} else {
