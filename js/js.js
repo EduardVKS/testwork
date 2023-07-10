@@ -21,12 +21,19 @@ $('.user img').click(function() {
 
 $('#add-edit-user').submit(function(event) {
 	event.preventDefault();
+	if (!$('#role').val()) {
+		$('#alert-window .modal-title').text('Submit Confirmation');
+		$('#alert-window .modal-footer .action').hide();
+		$('#alert-window .modal-body').html('<p class="text-danger">Please, select role for user!</p>');
+		$('#alert-window').modal('show');
+		return
+	}
 	var data = {};
 	$.each($('#add-edit-user').serializeArray(), function() {
 		data[this.name] = this.value; 	  
 	});
 	data.status = $('#add-edit-user #status').prop('checked');
-
+	
 	$.ajax ({
         url: '/addnewuser',
         method: 'POST',
@@ -69,6 +76,12 @@ $('#update-status').submit(function(event) {
 		$('#alert-window').modal('show');
 		return
 	}
+
+	if(data.status == 'delete') {
+		let message = `Are you sure you want delete <b>${data.users.length} ${(data.users.length === 1)?'user':'users'}</b>?`;
+		deleteConfirmation(message, data, deleteUsers);
+		return;
+	}
 	
 	$.ajax ({
         url: '/updatestatususers',
@@ -81,13 +94,9 @@ $('#update-status').submit(function(event) {
         	if(response) response = JSON.parse(response);
 	        	if (response.status === true) {
 	        		for (user of users) {
-		        		if(response.action == 'delete') {
-		        			$(`.user[data-user="${user}"`).remove();
-		        		} else {
-		        			let status = (response.action == 'active')?'status-green':'status-grey';
-		        			$(`input[type="checkbox"]`).prop('checked', false);
-		        			$(`.user[data-user=${user}] [class^="status-"]`).attr('class', status);
-		        		}
+		        		let status = (response.action == 'active')?'status-green':'status-grey';
+	        			$(`input[type="checkbox"]`).prop('checked', false);
+	        			$(`.user[data-user=${user}] [class^="status-"]`).attr('class', status);
 	        		}
 	        		$('#update-status').trigger('reset');
 	        	}
@@ -166,19 +175,9 @@ function editUser (e) {
 	        }
 	    });
 	} else if (action == 'delete') {
-		$('#alert-window .modal-title').text('Delete Confirmation');
-		let actionButton = $('#alert-window .modal-footer .action');
-		actionButton.text('Delete');
-		actionButton.removeClass('btn-primary');
-		actionButton.addClass('btn-danger');
-		actionButton.click(function() {deleteUser(user)});
-
 		let nameUser = e.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.innerText;
-
-		$('#alert-window .modal-body').html('<p>Are you sure you want to delete <b>'+
-			nameUser + '</b>?</p>');
-		$('#alert-window .modal-footer .action').show();
-		$('#alert-window').modal('show');
+		let message = 'Are you sure you want to delete <b>'+ nameUser + '</b>?';
+		deleteConfirmation(message, user, deleteUser);
 	}
 }
 
@@ -198,4 +197,37 @@ function deleteUser (user) {
         	}
         }
     });
+}
+
+function deleteUsers (data) {
+	$.ajax ({
+        url: '/updatestatususers',
+        method: 'POST',
+        data: data,
+        beforeSend: function (request) {
+            return request.setRequestHeader('token', $("meta[name='token']").attr('content'));
+        },
+        success: function (response) {
+        	if(response) response = JSON.parse(response);
+	        	if (response.status === true) {
+	        		for (user of data.users) {
+		        		$(`.user[data-user="${user}"`).remove();
+	        		}
+	        		$('#update-status').trigger('reset');
+	        	}
+        }
+    });
+}
+
+function deleteConfirmation (message, users, func) {
+	$('#alert-window .modal-title').text('Delete Confirmation');
+	let actionButton = $('#alert-window .modal-footer .action');
+	actionButton.text('Delete');
+	actionButton.removeClass('btn-primary');
+	actionButton.addClass('btn-danger');
+	actionButton.click(() => func(users));
+
+	$('#alert-window .modal-body').html('<p>' + message + '</p>');
+	$('#alert-window .modal-footer .action').show();
+	$('#alert-window').modal('show');
 }
