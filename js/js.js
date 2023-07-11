@@ -24,7 +24,7 @@ $('#add-edit-user').submit(function(event) {
 	event.preventDefault();
 	var data = {};
 	$.each($('#add-edit-user').serializeArray(), function() {
-		data[this.name] = this.value; 	  
+		data[this.name] = this.value.trim(); 	  
 	});
 
 	let valid = true;
@@ -210,6 +210,9 @@ function deleteUser (user) {
         	if (response.status === true) {
         		$(`.user[data-user="${user}"`).remove();
 				$('#alert-window').modal('hide');
+				if ($('form input[type="checkbox"]:not(#group-select):checked').length == $('form input[type="checkbox"]:not(#group-select)').length -1) {
+					$('form input#group-select').prop('checked', true);
+				}
         	}
         }
     });
@@ -230,6 +233,7 @@ function deleteUsers (data) {
 		        		$(`.user[data-user="${user}"`).remove();
 	        		}
 	        		$('#update-status').trigger('reset');
+	        		$('#alert-window').modal('hide');
 	        	}
         }
     });

@@ -36,7 +36,7 @@
 									<label class="custom-control-label" for="checkbox[<?= $user['id']; ?>]"></label>
 								</div>
 							</td>
-							<td><?= $user['first_name']; ?> <?= $user['last_name']; ?></td>
+							<td><?= htmlspecialchars($user['first_name']); ?> <?= htmlspecialchars($user['last_name']); ?></td>
 							<td class="text-center"><span class="<?= $user['status']; ?>"></span></td>
 							<td><?= $user['role']; ?></td>
 							<td class="text-center">
