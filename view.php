@@ -6,7 +6,7 @@
 	<meta name="token" content="<?= $_SESSION['token']; ?>">
 	<title>First Project</title>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="/css/style.css">
+	<link rel="stylesheet" type="text/css" href="/css/style.css?ver=1">
 </head>
 <body>
 	<div class="container mt-3">
@@ -65,11 +65,13 @@
 	      		<input type="hidden"  name="user">
 	      		<div class="form-group mb-3">
 	      			<label for="first-name">First name</label>
-	      			<input class="form-control" id="first-name" type="text" name="first_name" required>
+	      			<input class="form-control" id="first-name" type="text" name="first_name">
+	      			<p class="text-danger"></p>
 	      		</div>
 	      		<div class="form-group mb-3">
 	      			<label for="last-name">Last name</label>
-	      			<input class="form-control" id="last-name" type="text" name="last_name" required>
+	      			<input class="form-control" id="last-name" type="text" name="last_name">
+	      			<p class="text-danger"></p>
 	      		</div>
 	      		<div class="form-group mb-3">
 	      			<label for="status">Status</label><br>
@@ -80,11 +82,12 @@
 	      		</div>
 	      		<div class="form-group mb-3">
 	      			<label for="role">Role</label>
-	      			<select class="form-control" id="role" type="text" name="role" required>
+	      			<select class="form-control" id="role" type="text" name="role">
 	      				<option disabled selected>-Please Select-</option>
 	      				<option value="admin">Admin</option>
 	      				<option value="user">User</option>
 	      			</select>
+	      			<p class="text-danger"></p>
 	      		</div>
 	      	
 	      </div>
@@ -115,6 +118,6 @@
 
 	<script src="https://code.jquery.com/jquery-3.7.0.min.js" type="text/javascript"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="/js/js.js?ver=2"></script>
+	<script type="text/javascript" src="/js/js.js?ver=3"></script>
 </body>
 </html>

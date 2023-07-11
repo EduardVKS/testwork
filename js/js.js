@@ -11,6 +11,7 @@ $('.add-user').click(function() {
 	$('#change-user .modal-title').text('Add User');
 	$('#add-edit-user').trigger('reset');
 	$('#add-edit-user input[name="user"').val('');
+	$('#change-user .action').text('Add');
 
 	$('#change-user').modal('show');
 });
@@ -21,17 +22,27 @@ $('.user img').click(function() {
 
 $('#add-edit-user').submit(function(event) {
 	event.preventDefault();
-	if (!$('#role').val()) {
-		$('#alert-window .modal-title').text('Submit Confirmation');
-		$('#alert-window .modal-footer .action').hide();
-		$('#alert-window .modal-body').html('<p class="text-danger">Please, select role for user!</p>');
-		$('#alert-window').modal('show');
-		return
-	}
 	var data = {};
 	$.each($('#add-edit-user').serializeArray(), function() {
 		data[this.name] = this.value; 	  
 	});
+
+	let valid = true;
+	$('#add-edit-user p').text('');
+	if (!data.first_name) {
+		$('#add-edit-user #first-name ~ p').text('This field must not be empty!');
+		valid = false;
+	}
+	if (!data.last_name) {
+		$('#add-edit-user #last-name ~ p').text('This field must not be empty!');
+		valid = false;
+	}
+	if (!$('#role').val()) {
+		$('#add-edit-user #role ~ p').text('Please, select role for user!');
+		valid = false;
+	}
+	if(!valid) return;
+	
 	data.status = $('#add-edit-user #status').prop('checked');
 	
 	$.ajax ({
@@ -52,6 +63,9 @@ $('#add-edit-user').submit(function(event) {
         }
     });
 });
+$('#first-name, #last-name, #role').focus(function() {
+	this.nextElementSibling.innerText = '';
+});
 
 $('#update-status').submit(function(event) {
 	event.preventDefault();
@@ -66,8 +80,8 @@ $('#update-status').submit(function(event) {
 	});
 	data.users = users;
 
-	if($.inArray(data.status, ['active', 'notactive', 'delete']) === -1) message = 'You haven\'t selected a status for the selected users!';
 	if(!data.users.length) message = 'You haven\'t selected any users!';
+	if($.inArray(data.status, ['active', 'notactive', 'delete']) === -1) message = 'You didn\'t select an action for the selected users';
 
 	if(message) {
 		$('#alert-window .modal-title').text('Submit Confirmation');
@@ -142,6 +156,8 @@ function createUser (user) {
 	checkBox.querySelector('input').onchange = function () {markUser(this)};
 	options.childNodes[0].onclick = function () {editUser(this)};
 	options.childNodes[1].onclick = function () {editUser(this)};
+
+	$('#group-select').prop('checked', false);
 
 	return tr;
 }
