@@ -43,26 +43,30 @@ class DB {
 			$stmt->bind_param($bind, ...$data);
 			return $stmt->execute();
 		} else {
+			$result = [];
 			foreach ($data as $value) {
 				$stmt->bind_param($bind, ...$value);
 				$stmt->execute();
+				if($stmt->affected_rows) $result[] = $value; 
 			}
-			return true;
+			return $result;
 		}
-		return false;
 	}
 
 	public function deleteData ($query, $bind='', $data=[]) {
 		$stmt = static::$db->prepare($query);
-		if(!is_array($data[0])) {
+		if(!is_array($data[array_key_first($data)])) {
 			$stmt->bind_param($bind, ...$data);
+			$stmt->execute();
 			return $stmt->execute();
 		} else {
+			$result = [];
 			foreach ($data as $value) {
 				$stmt->bind_param($bind, ...$value);
 				$stmt->execute();
+				if($stmt->affected_rows) $result[] = $value; 
 			}
-			return true;
+			return $result;
 		}
 	}
 }

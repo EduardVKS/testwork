@@ -12,6 +12,7 @@ $('.add-user').click(function() {
 	$('#add-edit-user').trigger('reset');
 	$('#add-edit-user input[name="user"').val('');
 	$('#change-user .action').text('Add');
+	$('#add-edit-user p').text('');
 
 	$('#change-user').modal('show');
 });
@@ -26,22 +27,6 @@ $('#add-edit-user').submit(function(event) {
 	$.each($('#add-edit-user').serializeArray(), function() {
 		data[this.name] = this.value.trim(); 	  
 	});
-
-	let valid = true;
-	$('#add-edit-user p').text('');
-	if (!data.first_name) {
-		$('#add-edit-user #first-name ~ p').text('This field must not be empty!');
-		valid = false;
-	}
-	if (!data.last_name) {
-		$('#add-edit-user #last-name ~ p').text('This field must not be empty!');
-		valid = false;
-	}
-	if (!$('#role').val()) {
-		$('#add-edit-user #role ~ p').text('Please, select role for user!');
-		valid = false;
-	}
-	if(!valid) return;
 	
 	data.status = $('#add-edit-user #status').prop('checked');
 	
@@ -59,6 +44,20 @@ $('#add-edit-user').submit(function(event) {
 	        		let tr = createUser(response.user);
 	        		(oldUser.attr('data-user'))?oldUser.replaceWith(tr):$('.table').append(tr);
 	        		$('#change-user').modal('hide');
+	        	} else if (response.error.message == 'Wrong data') {
+					$('#add-edit-user p').text('');
+					if (!data.first_name) {
+						$('#add-edit-user #first-name ~ p').text('This field must not be empty!');
+					}
+					if (!data.last_name) {
+						$('#add-edit-user #last-name ~ p').text('This field must not be empty!');
+					}
+					if (!$('#role').val()) {
+						$('#add-edit-user #role ~ p').text('Please, select role for user!');
+					}
+	        	} else {
+	        		$('#change-user').modal('hide');
+	        		alertConfirmation(response.error.message);
 	        	}
         }
     });
@@ -69,7 +68,7 @@ $('#first-name, #last-name, #role').focus(function() {
 
 $('#update-status').submit(function(event) {
 	event.preventDefault();
-	let message;
+	var message;
 	var users = [];
 	let data = {};
 
@@ -80,15 +79,12 @@ $('#update-status').submit(function(event) {
 	});
 	data.users = users;
 
-	if(!data.users.length) message = 'You haven\'t selected any users!';
 	if($.inArray(data.status, ['active', 'notactive', 'delete']) === -1) message = 'You didn\'t select an action for the selected users';
+	if(!data.users.length) message = 'You haven\'t selected any users!';
 
 	if(message) {
-		$('#alert-window .modal-title').text('Submit Confirmation');
-		$('#alert-window .modal-footer .action').hide();
-		$('#alert-window .modal-body').html('<p class="text-danger">'+ message + '</p>');
-		$('#alert-window').modal('show');
-		return
+		alertConfirmation(message);
+		return;
 	}
 
 	if(data.status == 'delete') {
@@ -107,12 +103,20 @@ $('#update-status').submit(function(event) {
         success: function (response) {
         	if(response) response = JSON.parse(response);
 	        	if (response.status === true) {
-	        		for (user of users) {
+	        		for (user of response.users) {
 		        		let status = (response.action == 'active')?'status-green':'status-grey';
 	        			$(`input[type="checkbox"]`).prop('checked', false);
 	        			$(`.user[data-user=${user}] [class^="status-"]`).attr('class', status);
 	        		}
 	        		$('#update-status').trigger('reset');
+	        	} else {
+	        		if(response.error.message == 'no users') {
+						alertConfirmation('You haven\'t selected any users!');
+	        		} else if (response.error.message == 'no actions') {
+	        			alertConfirmation('You didn\'t select an action for the selected users');
+	        		} else {
+	        			alertConfirmation(response.error.message);
+	        		}
 	        	}
         }
     });
@@ -122,7 +126,7 @@ $('#update-status').submit(function(event) {
 function markUser (user) {
 	if(!user.checked) {
 		$('form input[name=group-select]').prop('checked', false);
-	} else if ($('form input[type=checkbox]:not([name=group-select]):checked').length == $('form input[type=checkbox]:not([name=group-select])').length) {
+	} else if ($('form input[name^=users]:checked').length == $('form input[name^=users]').length) {
 		$('form input[name=group-select]').prop('checked', true);
 	}
 }
@@ -167,6 +171,7 @@ function editUser (e) {
 	let user = e.parentNode.parentNode.dataset.user;
 
 	if (action == 'edit') {
+		$('#add-edit-user p').text('');
 		$.ajax ({
 	        url: `/finduser`,
 	        method: 'POST',
@@ -187,6 +192,8 @@ function editUser (e) {
 					$('#change-user .modal-body #role').val(response.user.role);
 
 					$('#change-user').modal('show');
+	        	} else {
+					alertConfirmation(response.error.message);
 	        	}
 	        }
 	    });
@@ -210,9 +217,11 @@ function deleteUser (user) {
         	if (response.status === true) {
         		$(`.user[data-user="${user}"`).remove();
 				$('#alert-window').modal('hide');
-				if ($('form input[type="checkbox"]:not(#group-select):checked').length == $('form input[type="checkbox"]:not(#group-select)').length -1) {
+				if ($('form input[name^=users]:checked').length == $('form input[name^=users]').length) {
 					$('form input#group-select').prop('checked', true);
 				}
+        	} else {
+        		 alertConfirmation(response.error.message);
         	}
         }
     });
@@ -234,6 +243,14 @@ function deleteUsers (data) {
 	        		}
 	        		$('#update-status').trigger('reset');
 	        		$('#alert-window').modal('hide');
+	        	} else {
+	        		if(response.error.message == 'no users') {
+						alertConfirmation('You haven\'t selected any users!');
+	        		} else if (response.error.message == 'no actions') {
+	        			alertConfirmation('You didn\'t select an action for the selected users');
+	        		} else {
+	        			alertConfirmation(response.error.message);
+	        		}
 	        	}
         }
     });
@@ -249,5 +266,13 @@ function deleteConfirmation (message, users, func) {
 
 	$('#alert-window .modal-body').html('<p>' + message + '</p>');
 	$('#alert-window .modal-footer .action').show();
+	$('#alert-window').modal('show');
+}
+
+function alertConfirmation (message) {
+	$('#alert-window .modal-title').text('Alert Confirmation');
+	$('#alert-window .modal-footer .action').hide();
+
+	$('#alert-window .modal-body').html('<p class="text-danger">' + message + '</p>');
 	$('#alert-window').modal('show');
 }

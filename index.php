@@ -1,9 +1,5 @@
 <?php
 
-//$dbinfo = require 'config_db.php';
-//print_r($dbinfo);
-//exit;
-
 session_start();
 setcookie('PHPSESSID', session_id());
 
@@ -25,11 +21,8 @@ new App\Models\DB(require 'config_db.php');
 switch ($path) {
 	case '':
 		if(!isset($_SESSION['token'])) $_SESSION['token'] = md5(microtime() . 'turbo' . time());
-		$DB = new App\Models\DB();
-		$users = $DB->getDataAll('Select * FROM `users`');
-		foreach ($users as $key => $user) {
-			$users[$key]['status'] = $user['status']?'status-green':'status-grey';
-		}
+		$users = App\Controllers\UsersController::getUsers();
+		
 		require_once('view.php');
 	break;
 
@@ -40,6 +33,7 @@ switch ($path) {
 		} else {
 			$response = App\Controllers\UsersController::updateUser($_POST);
 		}
+
 		if(isset($response['id'])) {
 			$result = (object) [
 				'status' => true,
@@ -49,7 +43,7 @@ switch ($path) {
 		} else {
 			$result = (object) [
 				'status' => false,
-				'error' => (object) ['code'=>100, 'message'=>'wrong data'],
+				'error' => (object) ['code'=>100, 'message'=>$response],
 			];
 		}
 		echo json_encode($result);
@@ -62,11 +56,12 @@ switch ($path) {
 			$result = (object) [
 				'status' => true,
 				'error' => null,
+				'id' => $_POST['user'],
 			];
 		} else {
 			$result = (object) [
 				'status' => false,
-				'error' => (object) ['code'=>100, 'message'=>'not found user'],
+				'error' => (object) ['code'=>100, 'message'=>'Not found user'],
 			];
 		}
 		echo json_encode($result);
@@ -84,7 +79,7 @@ switch ($path) {
 		} else {
 			$result = (object) [
 				'status' => false,
-				'error' => (object) ['code'=>100, 'message'=>'not found user'],
+				'error' => (object) ['code'=>100, 'message'=>'Not found user'],
 			];
 		}
 		echo json_encode($result);
@@ -93,16 +88,17 @@ switch ($path) {
 	case 'updatestatususers':
 		check_token();
 		$response = App\Controllers\UsersController::updateStatusUsers($_POST);
-		if($response) {
+		if(is_array($response)) {
 			$result = (object) [
 				'status' => true,
 				'error' => null,
-				'action' => $_POST['status'], 
+				'action' => $_POST['status'],
+				'users' => $response,
 			];
 		} else {
 			$result = (object) [
 				'status' => false,
-				'error' => (object) ['code'=>100, 'message'=>'not found user'],
+				'error' => (object) ['code'=>100, 'message'=> $response],
 			];
 		}
 		echo json_encode($result);

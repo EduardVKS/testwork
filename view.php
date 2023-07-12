@@ -84,8 +84,8 @@
 	      			<label for="role">Role</label>
 	      			<select class="form-control" id="role" type="text" name="role">
 	      				<option disabled selected>-Please Select-</option>
-	      				<option value="admin">Admin</option>
-	      				<option value="user">User</option>
+	      				<option value="1">Admin</option>
+	      				<option value="2">User</option>
 	      			</select>
 	      			<p class="text-danger"></p>
 	      		</div>
@@ -118,6 +118,6 @@
 
 	<script src="https://code.jquery.com/jquery-3.7.0.min.js" type="text/javascript"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="/js/js.js?ver=3"></script>
+	<script type="text/javascript" src="/js/js.js?ver=5"></script>
 </body>
 </html>
