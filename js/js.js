@@ -101,14 +101,23 @@ $('#update-status').submit(function(event) {
             return request.setRequestHeader('token', $("meta[name='token']").attr('content'));
         },
         success: function (response) {
+        	console.log(response);
         	if(response) response = JSON.parse(response);
 	        	if (response.status === true) {
+	        		let validate;
+	        		$(`input[type="checkbox"]`).prop('checked', false);
 	        		for (user of response.users) {
 		        		let status = (response.action == 'active')?'status-green':'status-grey';
-	        			$(`input[type="checkbox"]`).prop('checked', false);
-	        			$(`.user[data-user=${user}] [class^="status-"]`).attr('class', status);
+	        			if(!user.isset) {
+	        				$(`.user[data-user=${user.id}]`).addClass('bright');
+	        				validate = true;
+	        			} else {
+	        				$(`.user[data-user=${user.id}] [class^="status-"]`).attr('class', status);
+	        				$(`.user[data-user=${user.id}]`).removeClass('bright');
+	        			}
 	        		}
 	        		$('#update-status').trigger('reset');
+	        		if(validate) alertConfirmation('Non-existent user have been highlihted. Please refresh the page!');
 	        	} else {
 	        		if(response.error.message == 'no users') {
 						alertConfirmation('You haven\'t selected any users!');
@@ -213,15 +222,20 @@ function deleteUser (user) {
             return request.setRequestHeader('token', $("meta[name='token']").attr('content'));
         },
         success: function (response) {
+        	console.log(response);
         	if(response) response = JSON.parse(response);
         	if (response.status === true) {
-        		$(`.user[data-user="${user}"`).remove();
-				$('#alert-window').modal('hide');
+        		$(`.user[data-user="${response.id}"`).remove();
 				if ($('form input[name^=users]:checked').length == $('form input[name^=users]').length) {
 					$('form input#group-select').prop('checked', true);
 				}
+				if(response.error == 'no user') {
+					alertConfirmation('Non-existent user have been removed. Please refresh the page!');
+				} else {
+					$('#alert-window').modal('hide');
+				}
         	} else {
-        		 alertConfirmation(response.error.message);
+        		alertConfirmation(response.error.message);
         	}
         }
     });
@@ -238,18 +252,21 @@ function deleteUsers (data) {
         success: function (response) {
         	if(response) response = JSON.parse(response);
 	        	if (response.status === true) {
-	        		for (user of data.users) {
-		        		$(`.user[data-user="${user}"`).remove();
+	        		let validate;
+	        		for (user of response.users) {
+		        		$(`.user[data-user="${user.id}"`).remove();
+		        		if(!user.isset) validate = true;
 	        		}
 	        		$('#update-status').trigger('reset');
-	        		$('#alert-window').modal('hide');
+	        		if(validate) alertConfirmation('Non-existent users have been removed. Please refresh the page!');
+	        		else $('#alert-window').modal('hide');
 	        	} else {
 	        		if(response.error.message == 'no users') {
 						alertConfirmation('You haven\'t selected any users!');
 	        		} else if (response.error.message == 'no actions') {
 	        			alertConfirmation('You didn\'t select an action for the selected users');
 	        		} else {
-	        			alertConfirmation(response.error.message);
+	        			alertConfirmation('Wrong data!');
 	        		}
 	        	}
         }

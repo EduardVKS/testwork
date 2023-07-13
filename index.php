@@ -52,10 +52,10 @@ switch ($path) {
 	case 'deleteuser':
 		check_token();
 		$response = App\Controllers\UsersController::deleteUser($_POST);
-		if($response) {
+		if($response !== false) {
 			$result = (object) [
 				'status' => true,
-				'error' => null,
+				'error' => ($response)?null:'no user',
 				'id' => $_POST['user'],
 			];
 		} else {

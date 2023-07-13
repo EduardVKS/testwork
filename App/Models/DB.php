@@ -58,13 +58,13 @@ class DB {
 		if(!is_array($data[array_key_first($data)])) {
 			$stmt->bind_param($bind, ...$data);
 			$stmt->execute();
-			return $stmt->execute();
+			return $stmt->affected_rows;
 		} else {
 			$result = [];
 			foreach ($data as $value) {
 				$stmt->bind_param($bind, ...$value);
 				$stmt->execute();
-				if($stmt->affected_rows) $result[] = $value; 
+				if($stmt->affected_rows) $result[] = $value;
 			}
 			return $result;
 		}

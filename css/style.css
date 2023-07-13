@@ -18,6 +18,10 @@
 	background-color: grey;
 }
 
+.bright {
+  background: #FFD2C5;
+}
+
 .custom-control-label:before{
 	background-color: lightgrey;
 }

@@ -88,8 +88,6 @@ class UsersController {
 		if (is_numeric($request["user"])) {
 			$db = new DB();
 
-			if(!static::getUser(['user' => $request["user"]])) return false;
-
 			$query = 'DELETE FROM `users` WHERE `id` = ?';
 			
 			return $db->deleteData($query, 'i', [$request["user"]]);
@@ -111,17 +109,18 @@ class UsersController {
 				$result = $db->deleteData($query, 'i', $request["users"]);
 			}
 
-			if (!$result) {
-				foreach ($request['users'] as $user) {
-					if(static::getUser(['user' => $user[0]])) return $result;
+			foreach ($request['users'] as $key => $user) {
+				$validate[$key]['id'] = $user;
+				if(in_array($user, $result)) $validate[$key]['isset'] = true;
+				else {
+					$user = static::getUser(['user' => $user[0]]);
+					$validate[$key]['isset'] = ($user)?true:false;
 				}
-				return 'No found users';
-			} else {
-				return $result;
 			}
-
+			return $validate;
 		}
 		if (!in_array($request['status'], ['active', 'notactive', 'delete'])) return "no actions";
 		return "no users";
 	}
+
 }
