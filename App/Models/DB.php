@@ -41,13 +41,16 @@ class DB {
 		$stmt = static::$db->prepare($query);
 		if(!is_array($data[array_key_first($data)])) {
 			$stmt->bind_param($bind, ...$data);
-			return $stmt->execute();
+			$stmt->execute();
+			preg_match('/matched: (\d+)/', static::$db->info, $matched);
+			return $matched[1];
 		} else {
 			$result = [];
 			foreach ($data as $value) {
 				$stmt->bind_param($bind, ...$value);
 				$stmt->execute();
-				if($stmt->affected_rows) $result[] = $value; 
+				preg_match('/matched: (\d+)/', static::$db->info, $matched);
+				if($matched[1]) $result[] = $value[0];
 			}
 			return $result;
 		}
@@ -64,7 +67,7 @@ class DB {
 			foreach ($data as $value) {
 				$stmt->bind_param($bind, ...$value);
 				$stmt->execute();
-				if($stmt->affected_rows) $result[] = $value;
+				if($stmt->affected_rows) $result[] = $value[0];
 			}
 			return $result;
 		}

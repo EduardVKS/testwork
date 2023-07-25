@@ -3,10 +3,9 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="token" content="<?= $_SESSION['token']; ?>">
 	<title>First Project</title>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="/css/style.css?ver=2">
+	<link rel="stylesheet" type="text/css" href="/css/style.css?ver=3">
 </head>
 <body>
 	<div class="container mt-3">
@@ -28,20 +27,20 @@
 					</tr>
 
 
-					<?php if($users) foreach($users as $user) { ?>
+					<?php foreach($users as $user) { ?>
 						<tr class="user" data-user="<?= $user['id']; ?>">
 							<td>
 								<div class="custom-control custom-checkbox">
-									<input class="custom-control-input" name="users<?= $user['id']; ?>" type="checkbox" id="checkbox[<?= $user['id']; ?>]">
+									<input class="custom-control-input" name="users" type="checkbox" id="checkbox[<?= $user['id']; ?>]">
 									<label class="custom-control-label" for="checkbox[<?= $user['id']; ?>]"></label>
 								</div>
 							</td>
-							<td><?= htmlspecialchars($user['first_name']); ?> <?= htmlspecialchars($user['last_name']); ?></td>
-							<td class="text-center"><span class="<?= $user['status']; ?>"></span></td>
-							<td><?= $user['role']; ?></td>
+							<td class="user-fullname"><?= htmlspecialchars($user['first_name']); ?> <?= htmlspecialchars($user['last_name']); ?></td>
+							<td class="text-center"><span data-status="<?= $user['status']; ?>" class="status"></span></td>
+							<td><?= $roles[$user['role']]; ?></td>
 							<td class="text-center">
-								<img data-action="edit" src="/img/edit.png" width="20px">
-								<img data-action="delete" src="/img/delete.png" width="20px">
+								<span class="add-user" data-action="edit"></span>
+								<span data-action="delete"></span>
 							</td>
 						</tr>
 					<?php } ?>
@@ -65,7 +64,7 @@
 	      		<input type="hidden"  name="user">
 	      		<div class="form-group mb-3">
 	      			<label for="first-name">First name</label>
-	      			<input class="form-control" id="first-name" type="text" name="first_name">
+	      			<input class="form-control" id="first-name" type="text" name="first_name"  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 	      			<p class="text-danger"></p>
 	      		</div>
 	      		<div class="form-group mb-3">
@@ -83,9 +82,10 @@
 	      		<div class="form-group mb-3">
 	      			<label for="role">Role</label>
 	      			<select class="form-control" id="role" type="text" name="role">
-	      				<option disabled selected>-Please Select-</option>
-	      				<option value="1">Admin</option>
-	      				<option value="2">User</option>
+	      				<option value="0" disabled selected>-Please Select-</option>
+	      				<?php foreach ($roles as $id => $role) { ?>
+		      				<option value="<?= $id ?>"><?= ucfirst($role) ?></option>
+		      			<? } ?>
 	      			</select>
 	      			<p class="text-danger"></p>
 	      		</div>
@@ -118,6 +118,6 @@
 
 	<script src="https://code.jquery.com/jquery-3.7.0.min.js" type="text/javascript"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="/js/js.js?ver=6"></script>
+	<script type="text/javascript" src="/js/js.js?ver=7"></script>
 </body>
 </html>

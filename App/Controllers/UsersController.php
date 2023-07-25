@@ -6,10 +6,8 @@ use App\Models\DB;
 class UsersController {
 	protected static $fillable = ['first_name', 'last_name', 'status', 'role'];
 
-	private static $role = [1 => 'admin', 2 => 'user'];
-
 	public static function createUser ($request) {
-		if (trim($request["first_name"]) && trim($request["last_name"]) && isset($request["status"]) && (isset($request["role"]) && isset(self::$role[$request["role"]])) ) {
+		if (trim($request["first_name"]) && trim($request["last_name"]) && isset($request["status"]) && $request["role"] >= 1) {
 			$request['status'] = ($request['status'] == "true")?1:0;
 			$db = new DB();
 			$query = 'INSERT INTO `users` SET';
@@ -19,18 +17,16 @@ class UsersController {
 					unset($request[$field]);
 					continue;
 				}
-				$query .= ' `'.$field.'` = ?,';
+				$query .= ' `'.htmlspecialchars($field).'` = ?,';
 				$bind .= ($field != 'status')?'s':'i';
 
 			}
 			$id = $db->setData(rtrim($query, ','), $bind, array_values($request));
 			if($id) {
-				$user = static::getUser(['user' => $id]);
-				$user['role'] = self::$role[$user['role']];
-				return $user;
+				return static::getUser(['user' => $id]);
 			}
 		}
-		return "Wrong data";
+		return ['code' => 104, 'message' => 'wrong data'];
 	}
 
 	public static function getUser ($request) {
@@ -38,27 +34,25 @@ class UsersController {
 			$db = new DB();
 			$query = 'SELECT * FROM `users` WHERE `id` = ?';
 			
-			return $db->getData($query, 'i', [$request["user"]]);
+			if($user = $db->getData($query, 'i', [$request["user"]])) {
+				return $user;
+			} else {
+				return ['code' => 105, 'message' => 'no user'];
+			}
 		}
-		return false;
+		return ['code' => 104, 'message' => 'wrong data'];
 	}
 
 	public static function getUsers () {
 		$db = new DB();
-		$users = $db->getDataAll('Select * FROM `users`');
-		foreach ($users as $key => $user) {
-			$users[$key]['role'] = self::$role[$user['role']];
-			$users[$key]['status'] = $user['status']?'status-green':'status-grey';
-		}
-		return $users;
+		return $db->getDataAll('Select * FROM `users`');
 	}
 
 	public static function updateUser ($request) {
-		if ($request["first_name"] && $request["last_name"] && isset($request["status"]) && isset(self::$role[$request["role"]]) && $request['user'] > 0) {
+		if ($request["first_name"] && $request["last_name"] && isset($request["status"]) && $request["role"] > 0 && $request['user'] > 0) {
 
 			$db = new DB();
-			$user = static::getUser(['user' => $request['user']]);
-			if(!$user) return 'Not found user';
+			$user = $request['user'];
 
 			$request['status'] = ($request['status'] == "true")?1:0;
 			$query = 'UPDATE `users` SET';
@@ -68,20 +62,20 @@ class UsersController {
 					unset($request[$field]);
 					continue;
 				}
-				$query .= ' `'.$field.'` = ?,';
+				$query .= ' `'.htmlspecialchars($field).'` = ?,';
 				$bind .= ($field != 'status')?'s':'i';
 			}
 			$bind .= 'i';
 			$query =  rtrim($query, ',').' WHERE `id` = ?';
 			$data = array_values($request);
-			array_push($data, $user['id']);
+			array_push($data, $user);
 			if($db->updateData($query, $bind, $data)) {
-				$user = static::getUser(['user' => $user['id']]);
-				$user['role'] = self::$role[$user['role']];
-				return $user;
+				return static::getUser(['user' => $user]);
+			} else {
+				return ['code' => 105, 'message' => 'no user'];
 			}
 		}
-		return 'Wrong data';
+		return ['code' => 104, 'message' => 'wrong data'];
 	}
 
 	public static function deleteUser ($request) {
@@ -92,11 +86,11 @@ class UsersController {
 			
 			return $db->deleteData($query, 'i', [$request["user"]]);
 		}
-		return false;
+		return ['code' => 104, 'message' => 'wrong data'];
 	}
 
 	public static function updateStatusUsers ($request) {
-		if (in_array($request['status'], ['active', 'notactive', 'delete']) && count($request['users'])) 
+		if (in_array($request['status'], ['active', 'notactive', 'delete']) && (isset($request['users']) && count($request['users'])))
 		{
 			$db = new DB();
 			$bind = 'i';
@@ -108,19 +102,13 @@ class UsersController {
 				$query = 'DELETE FROM `users` WHERE `id` = ?';
 				$result = $db->deleteData($query, 'i', $request["users"]);
 			}
-
 			foreach ($request['users'] as $key => $user) {
-				$validate[$key]['id'] = $user;
-				if(in_array($user, $result)) $validate[$key]['isset'] = true;
-				else {
-					$user = static::getUser(['user' => $user[0]]);
-					$validate[$key]['isset'] = ($user)?true:false;
-				}
+				$validate[$key]['id'] = $user[0];
+				$validate[$key]['isset'] = (in_array($user[0], $result))?true:false;
 			}
 			return $validate;
 		}
-		if (!in_array($request['status'], ['active', 'notactive', 'delete'])) return "no actions";
-		return "no users";
+		return false;
 	}
 
 }
